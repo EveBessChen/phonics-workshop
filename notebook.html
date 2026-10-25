@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>错词本 · 拼读小工坊</title>
+<meta name="description" content="拼读小工坊错词本：自动收集拼错的单词和错误次数，按字母排序，练熟了就删掉。">
+<meta name="application-name" content="拼读小工坊 · 让你轻松背单词">
+<meta name="apple-mobile-web-app-title" content="错词本">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F4F0E7;--paper:#fff;--ink:#171922;--ink2:#4C4F5C;--ink3:#8B8E9B;
+  --line:#E7E1D3;--terra:#C24E2E;--sage:#3E6B55;--gold:#B8862B;--ac:var(--terra);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Songti SC",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+html,body{margin:0;padding:0}
+body{font-family:var(--sans);color:var(--ink);min-height:100dvh;
+  background:
+    radial-gradient(900px 520px at 10% -10%, #FBE7DA 0%, rgba(251,231,218,0) 62%),
+    radial-gradient(760px 460px at 94% 2%, #E7EFE8 0%, rgba(231,239,232,0) 58%),
+    var(--bg);
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding:22px 18px calc(34px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+.homeFab{flex:0 0 auto;position:relative;font-size:12.5px;font-weight:700;color:var(--ink2);
+  background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 12px;
+  text-decoration:none;white-space:nowrap}
+.mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(150deg,#22252F,#0F1116);
+  color:#F7EFE0;display:grid;place-items:center;font-size:19px;flex:0 0 auto;
+  box-shadow:0 8px 18px -10px rgba(17,19,26,.9),inset 0 1px 0 rgba(255,255,255,.14)}
+.eyebrow{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);font-weight:700}
+h1{font-family:var(--serif);font-weight:500;font-size:21px;margin:3px 0 0;line-height:1.15}
+.slogan{font-family:var(--serif);font-size:13px;color:var(--ink2);margin:5px 0 0;letter-spacing:.04em}
+.lead{font-size:12.5px;color:var(--ink2);margin:0 0 14px;line-height:1.7}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.chip{border:1px solid var(--line);background:var(--paper);color:var(--ink2);font-size:12.5px;
+  font-weight:600;padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.chip .n{font-size:10.5px;opacity:.75;margin-left:3px}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--paper);
+  border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:13px;cursor:pointer}
+.row:active{transform:scale(.99)}
+.wd{font-family:var(--serif);font-size:16.5px;font-weight:600;flex:1 1 auto;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.zh{font-size:11.5px;color:var(--ink3);flex:0 0 auto;max-width:34%;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.meta{font-size:10px;color:var(--ink3);background:#F4F0E7;border-radius:6px;padding:2px 6px;flex:0 0 auto}
+.cnt{flex:0 0 auto;font-size:11.5px;font-weight:700;color:#fff;background:var(--terra);
+  padding:3px 9px;border-radius:999px;white-space:nowrap}
+.del{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);
+  background:#FBF8F2;color:var(--ink3);font-size:12px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.del:active{background:var(--terra);color:#fff;border-color:var(--terra)}
+.empty{text-align:center;padding:34px 16px;color:var(--ink3);font-size:13px;line-height:1.8;
+  background:var(--paper);border:1px dashed var(--line);border-radius:14px}
+.empty .big{font-size:30px;display:block;margin-bottom:8px}
+.foot{margin-top:18px;font-size:11.5px;color:var(--ink3);line-height:1.8}
+.foot b{color:var(--ink2);font-weight:600}
+.danger{margin-top:14px;width:100%;border:1px solid var(--line);background:var(--paper);
+  color:var(--ink3);font-size:12.5px;padding:10px;border-radius:11px;cursor:pointer}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:10px;background:#22252F;color:#F7EFE0;
+  font-size:12.5px;padding:8px 14px;border-radius:999px;opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:99}
+.toast.show{opacity:.96}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="homeFab" href="index.html">‹ 首页</a>
+    <div class="mark">📕</div>
+    <div>
+      <div class="eyebrow">Wrong words · 错词本</div>
+      <h1>错词本</h1>
+      <p class="slogan">拼错的词自动收进来</p>
+    </div>
+  </div>
+  <p class="lead">按字母排序 · 点一个词直接跳过去再练一次 · 练熟了就点 <b>✕</b> 删掉</p>
+  <div class="chips" id="chips"></div>
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty" hidden><span class="big">🌟</span>还没有错词。<br>玩「找一找」或「拼一拼」时拼错的词会自动出现在这里。</div>
+  <button class="danger" id="clearAll">清空这个错词本</button>
+  <p class="foot"><b>记录只存在这台设备的浏览器里</b>，换手机或用无痕模式会看不到；清理浏览器数据也会一起清掉。<br>错词按 <b>ABC 字母顺序</b> 排列。</p>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var WORDS_MIN = [{"w":"name","zh":"名字","us":[1],"g":"g3"},{"w":"nice","zh":"令人愉快的；友好的","us":[1],"g":"g3"},{"w":"ear","zh":"耳朵","us":[1],"g":"g3"},{"w":"hand","zh":"手","us":[1],"g":"g3"},{"w":"eye","zh":"眼睛","us":[1],"g":"g3"},{"w":"mouth","zh":"嘴","us":[1],"g":"g3"},{"w":"arm","zh":"胳膊","us":[1],"g":"g3"},{"w":"can","zh":"可以","us":[1],"g":"g3"},{"w":"share","zh":"分享","us":[1],"g":"g3"},{"w":"smile","zh":"微笑；笑","us":[1],"g":"g3"},{"w":"listen","zh":"听；倾听","us":[1],"g":"g3"},{"w":"help","zh":"帮助","us":[1],"g":"g3"},{"w":"say","zh":"说；讲","us":[1],"g":"g3"},{"w":"friend","zh":"朋友","us":[1],"g":"g3"},{"w":"good","zh":"好的","us":[1],"g":"g3"},{"w":"mum","zh":"（口语）妈妈","us":[2],"g":"g3"},{"w":"dad","zh":"（口语）爸爸；爹爹","us":[2],"g":"g3"},{"w":"grandma","zh":"奶奶；姥姥","us":[2],"g":"g3"},{"w":"grandpa","zh":"爷爷；姥爷","us":[2],"g":"g3"},{"w":"grandfather","zh":"（外）祖父；爷爷；姥爷；外公","us":[2],"g":"g3"},{"w":"grandmother","zh":"（外）祖母；奶奶；姥姥；外婆","us":[2],"g":"g3"},{"w":"mother","zh":"母亲；妈妈","us":[2],"g":"g3"},{"w":"father","zh":"父亲；爸爸","us":[2],"g":"g3"},{"w":"me","zh":"我","us":[2],"g":"g3"},{"w":"sister","zh":"姐；妹","us":[2],"g":"g3"},{"w":"family","zh":"家；家庭","us":[2],"g":"g3"},{"w":"have","zh":"有","us":[2],"g":"g3"},{"w":"big","zh":"大的","us":[2],"g":"g3"},{"w":"cousin","zh":"堂（表）兄弟；堂（表）姐妹","us":[2],"g":"g3"},{"w":"brother","zh":"哥；弟","us":[2],"g":"g3"},{"w":"baby","zh":"婴儿","us":[2],"g":"g3"},{"w":"uncle","zh":"伯父；叔父；舅父；姑父；姨父","us":[2],"g":"g3"},{"w":"aunt","zh":"伯母；婶母；舅母；姑母；姨母","us":[2],"g":"g3"},{"w":"small","zh":"小的","us":[2],"g":"g3"},{"w":"like","zh":"喜欢","us":[3],"g":"g3"},{"w":"dog","zh":"狗","us":[3],"g":"g3"},{"w":"pet","zh":"宠物","us":[3],"g":"g3"},{"w":"cat","zh":"猫","us":[3],"g":"g3"},{"w":"fish","zh":"鱼；鱼肉","us":[3],"g":"g3"},{"w":"bird","zh":"鸟","us":[3],"g":"g3"},{"w":"rabbit","zh":"兔子","us":[3],"g":"g3"},{"w":"go","zh":"去；走","us":[3],"g":"g3"},{"w":"zoo","zh":"动物园","us":[3],"g":"g3"},{"w":"fox","zh":"狐狸","us":[3],"g":"g3"},{"w":"Miss","zh":"（学生对女教师的称呼）老师；女士","us":[3],"g":"g3"},{"w":"panda","zh":"大熊猫","us":[3],"g":"g3"},{"w":"cute","zh":"可爱的","us":[3],"g":"g3"},{"w":"monkey","zh":"猴子","us":[3],"g":"g3"},{"w":"tiger","zh":"老虎","us":[3],"g":"g3"},{"w":"elephant","zh":"大象","us":[3],"g":"g3"},{"w":"lion","zh":"狮；狮子","us":[3],"g":"g3"},{"w":"animal","zh":"动物","us":[3],"g":"g3"},{"w":"giraffe","zh":"长颈鹿","us":[3],"g":"g3"},{"w":"tall","zh":"高的","us":[3],"g":"g3"},{"w":"fast","zh":"快的","us":[3],"g":"g3"},{"w":"apple","zh":"苹果","us":[4],"g":"g3"},{"w":"banana","zh":"香蕉","us":[4],"g":"g3"},{"w":"farm","zh":"农场","us":[4],"g":"g3"},{"w":"air","zh":"空气","us":[4],"g":"g3"},{"w":"orange","zh":"橙子；柑橘；橙红色","us":[4,5],"g":"g3"},{"w":"grape","zh":"葡萄","us":[4],"g":"g3"},{"w":"school","zh":"学校","us":[4],"g":"g3"},{"w":"garden","zh":"花园","us":[4],"g":"g3"},{"w":"need","zh":"需要","us":[4],"g":"g3"},{"w":"water","zh":"给…浇水；水","us":[4],"g":"g3"},{"w":"flower","zh":"花；花朵","us":[4],"g":"g3"},{"w":"grass","zh":"草；草地","us":[4],"g":"g3"},{"w":"plant","zh":"种植；植物","us":[4],"g":"g3"},{"w":"new","zh":"新","us":[4],"g":"g3"},{"w":"tree","zh":"树","us":[4],"g":"g3"},{"w":"sun","zh":"阳光；太阳","us":[4],"g":"g3"},{"w":"give","zh":"给","us":[4],"g":"g3"},{"w":"us","zh":"我们","us":[4],"g":"g3"},{"w":"them","zh":"它们；他们；她们","us":[4],"g":"g3"},{"w":"colour","zh":"颜色","us":[5],"g":"g3"},{"w":"green","zh":"绿色；绿色的","us":[5],"g":"g3"},{"w":"red","zh":"红色；红色的","us":[5],"g":"g3"},{"w":"blue","zh":"蓝色；蓝色的","us":[5],"g":"g3"},{"w":"make","zh":"使出现；做","us":[5],"g":"g3"},{"w":"purple","zh":"紫色；紫色的","us":[5],"g":"g3"},{"w":"brown","zh":"棕色；棕色的","us":[5],"g":"g3"},{"w":"bear","zh":"熊","us":[5],"g":"g3"},{"w":"yellow","zh":"黄色；黄色的","us":[5],"g":"g3"},{"w":"duck","zh":"鸭","us":[5],"g":"g3"},{"w":"sea","zh":"海；海洋","us":[5],"g":"g3"},{"w":"some","zh":"一些","us":[5],"g":"g3"},{"w":"pink","zh":"粉色；粉色的","us":[5],"g":"g3"},{"w":"draw","zh":"画","us":[5],"g":"g3"},{"w":"white","zh":"白色；白色的","us":[5],"g":"g3"},{"w":"black","zh":"黑色；黑色的","us":[5],"g":"g3"},{"w":"old","zh":"（多少）岁；年纪；旧的","us":[6],"g":"g3"},{"w":"five","zh":"五","us":[6],"g":"g3"},{"w":"year","zh":"年纪；年","us":[6],"g":"g3"},{"w":"one","zh":"一","us":[6],"g":"g3"},{"w":"two","zh":"二","us":[6],"g":"g3"},{"w":"three","zh":"三","us":[6],"g":"g3"},{"w":"four","zh":"四","us":[6],"g":"g3"},{"w":"ten","zh":"十","us":[6],"g":"g3"},{"w":"six","zh":"六","us":[6],"g":"g3"},{"w":"seven","zh":"七","us":[6],"g":"g3"},{"w":"eight","zh":"八","us":[6],"g":"g3"},{"w":"nine","zh":"九","us":[6],"g":"g3"},{"w":"o'clock","zh":"（表示整点）…点钟","us":[6],"g":"g3"},{"w":"cut","zh":"切；切块","us":[6],"g":"g3"},{"w":"eat","zh":"吃","us":[6],"g":"g3"},{"w":"cake","zh":"蛋糕","us":[6],"g":"g3"},{"w":"PE","zh":"体育（课）","us":[1],"g":"g4"},{"w":"job","zh":"工作；职业","us":[1],"g":"g4"},{"w":"doctor","zh":"医生","us":[1],"g":"g4"},{"w":"farmer","zh":"农场主；农民","us":[1],"g":"g4"},{"w":"nurse","zh":"护士","us":[1],"g":"g4"},{"w":"office","zh":"办公室","us":[1],"g":"g4"},{"w":"worker","zh":"工人；工作者","us":[1,4],"g":"g4"},{"w":"factory","zh":"工厂","us":[1],"g":"g4"},{"w":"busy","zh":"忙碌的","us":[1],"g":"g4"},{"w":"tired","zh":"疲倦的","us":[1],"g":"g4"},{"w":"chore","zh":"家庭杂务","us":[1],"g":"g4"},{"w":"cook","zh":"烹饪；煮；厨师","us":[1,4],"g":"g4"},{"w":"clean","zh":"打扫；干净的","us":[1],"g":"g4"},{"w":"room","zh":"房间","us":[1],"g":"g4"},{"w":"sweep","zh":"扫","us":[1],"g":"g4"},{"w":"floor","zh":"地板；地面","us":[1],"g":"g4"},{"w":"together","zh":"在一起；共同","us":[1],"g":"g4"},{"w":"people","zh":"人；人们","us":[1],"g":"g4"},{"w":"child","zh":"儿童；小孩（复数 children）","us":[1],"g":"g4"},{"w":"his","zh":"他的","us":[2],"g":"g4"},{"w":"strong","zh":"强壮的","us":[2],"g":"g4"},{"w":"hair","zh":"头发","us":[2],"g":"g4"},{"w":"kind","zh":"友好的","us":[2],"g":"g4"},{"w":"quiet","zh":"文静的","us":[2],"g":"g4"},{"w":"best","zh":"最好的","us":[2],"g":"g4"},{"w":"read","zh":"阅读","us":[2],"g":"g4"},{"w":"Chinese","zh":"中文；中国人；中国的","us":[2],"g":"g4"},{"w":"play","zh":"玩耍","us":[2],"g":"g4"},{"w":"game","zh":"游戏","us":[2],"g":"g4"},{"w":"football","zh":"足球运动","us":[2],"g":"g4"},{"w":"basketball","zh":"篮球运动","us":[2],"g":"g4"},{"w":"always","zh":"总是","us":[2],"g":"g4"},{"w":"afternoon","zh":"下午","us":[3],"g":"g4"},{"w":"there","zh":"（表示存在或发生）；在那里","us":[3],"g":"g4"},{"w":"playground","zh":"游乐场；操场","us":[3],"g":"g4"},{"w":"park","zh":"公园","us":[3],"g":"g4"},{"w":"over","zh":"在……的远端（或对面）","us":[3],"g":"g4"},{"w":"hospital","zh":"医院","us":[3],"g":"g4"},{"w":"shop","zh":"商店","us":[3],"g":"g4"},{"w":"toilet","zh":"厕所；卫生间","us":[3],"g":"g4"},{"w":"bus","zh":"公共汽车","us":[3],"g":"g4"},{"w":"stop","zh":"车站；停止","us":[3],"g":"g4"},{"w":"library","zh":"图书馆","us":[3],"g":"g4"},{"w":"sport","zh":"体育运动","us":[3],"g":"g4"},{"w":"walk","zh":"散步；行走","us":[3],"g":"g4"},{"w":"community","zh":"社区","us":[3],"g":"g4"},{"w":"favourite","zh":"最喜欢的","us":[3],"g":"g4"},{"w":"place","zh":"地方；场所","us":[3],"g":"g4"},{"w":"photo","zh":"照片","us":[3],"g":"g4"},{"w":"story","zh":"故事","us":[3],"g":"g4"},{"w":"buy","zh":"购买","us":[3],"g":"g4"},{"w":"firefighter","zh":"消防队员","us":[4],"g":"g4"},{"w":"why","zh":"为什么","us":[4],"g":"g4"},{"w":"driver","zh":"司机","us":[4],"g":"g4"},{"w":"important","zh":"重要的","us":[4],"g":"g4"},{"w":"cleaner","zh":"清洁工","us":[4],"g":"g4"},{"w":"delivery","zh":"递送；投递","us":[4],"g":"g4"},{"w":"police","zh":"警察","us":[4],"g":"g4"},{"w":"officer","zh":"官员；警官","us":[4],"g":"g4"},{"w":"now","zh":"现在","us":[4],"g":"g4"},{"w":"old","zh":"过去的；年纪大的；老的","us":[4],"g":"g4"},{"w":"tell","zh":"讲述；告诉","us":[4],"g":"g4"},{"w":"everyone","zh":"每人","us":[4],"g":"g4"},{"w":"Ms","zh":"女士（女子姓氏/姓名前，不指明婚否）","us":[4],"g":"g4"},{"w":"speak","zh":"说话；发言","us":[5],"g":"g4"},{"w":"weather","zh":"天气","us":[5],"g":"g4"},{"w":"sunny","zh":"阳光充足的","us":[5],"g":"g4"},{"w":"hot","zh":"热的","us":[5],"g":"g4"},{"w":"bad","zh":"令人不快的；坏的","us":[5],"g":"g4"},{"w":"cold","zh":"冷的","us":[5],"g":"g4"},{"w":"windy","zh":"多风的","us":[5],"g":"g4"},{"w":"cloudy","zh":"多云的","us":[5],"g":"g4"},{"w":"rainy","zh":"阴雨的","us":[5],"g":"g4"},{"w":"snowy","zh":"多雪的","us":[5],"g":"g4"},{"w":"cool","zh":"凉爽的","us":[5],"g":"g4"},{"w":"warm","zh":"温暖的","us":[5],"g":"g4"},{"w":"tomorrow","zh":"在明天","us":[5],"g":"g4"},{"w":"rain","zh":"下雨；雨","us":[5],"g":"g4"},{"w":"closed","zh":"关闭的","us":[5],"g":"g4"},{"w":"film","zh":"电影","us":[5],"g":"g4"},{"w":"idea","zh":"想法；主意","us":[5],"g":"g4"},{"w":"fly","zh":"操纵（飞行器等）；飞","us":[5],"g":"g4"},{"w":"kite","zh":"风筝","us":[5],"g":"g4"},{"w":"snowman","zh":"雪人","us":[5],"g":"g4"},{"w":"fun","zh":"享乐；乐趣","us":[5],"g":"g4"},{"w":"their","zh":"他们的；她们的；它们的","us":[5],"g":"g4"},{"w":"swim","zh":"游泳","us":[5],"g":"g4"},{"w":"Sydney","zh":"悉尼","us":[5],"g":"g4"},{"w":"whose","zh":"谁的","us":[6],"g":"g4"},{"w":"sweater","zh":"毛衣","us":[6],"g":"g4"},{"w":"sock","zh":"短袜","us":[6],"g":"g4"},{"w":"mine","zh":"我的","us":[6],"g":"g4"},{"w":"wear","zh":"穿；戴","us":[6],"g":"g4"},{"w":"shirt","zh":"衬衫","us":[6],"g":"g4"},{"w":"coat","zh":"大衣；外套","us":[6],"g":"g4"},{"w":"dress","zh":"连衣裙","us":[6],"g":"g4"},{"w":"which","zh":"哪一个；哪一些","us":[6],"g":"g4"},{"w":"season","zh":"季节","us":[6],"g":"g4"},{"w":"winter","zh":"冬天","us":[6],"g":"g4"},{"w":"snow","zh":"下雪；雪","us":[6],"g":"g4"},{"w":"spring","zh":"春天","us":[6],"g":"g4"},{"w":"summer","zh":"夏天","us":[6],"g":"g4"},{"w":"autumn","zh":"秋天","us":[6],"g":"g4"},{"w":"T-shirt","zh":"T恤衫","us":[6],"g":"g4"},{"w":"fall","zh":"落下","us":[6],"g":"g4"},{"w":"leaf","zh":"叶（复数 leaves）","us":[6],"g":"g4"},{"w":"glove","zh":"手套","us":[6],"g":"g4"},{"w":"then","zh":"然后；那时","us":[6],"g":"g4"},{"w":"team","zh":"队；队员","us":[1],"g":"g5"},{"w":"player","zh":"运动员；玩家","us":[1],"g":"g5"},{"w":"him","zh":"他（宾格）","us":[1],"g":"g5"},{"w":"lovely","zh":"可爱的","us":[1],"g":"g5"},{"w":"clever","zh":"聪明的","us":[1],"g":"g5"},{"w":"young","zh":"年轻的","us":[1],"g":"g5"},{"w":"hard-working","zh":"勤劳的","us":[1],"g":"g5"},{"w":"science","zh":"科学","us":[1],"g":"g5"},{"w":"robot","zh":"机器人","us":[1],"g":"g5"},{"w":"jump","zh":"跳","us":[1],"g":"g5"},{"w":"rope","zh":"绳；跳绳","us":[1],"g":"g5"},{"w":"piano","zh":"钢琴","us":[1],"g":"g5"},{"w":"chess","zh":"国际象棋","us":[1],"g":"g5"},{"w":"front","zh":"前面","us":[1],"g":"g5"},{"w":"easy","zh":"容易的","us":[1],"g":"g5"},{"w":"star","zh":"明星；星","us":[1],"g":"g5"},{"w":"wonderful","zh":"精彩的","us":[1],"g":"g5"},{"w":"Australia","zh":"澳大利亚","us":[1],"g":"g5"},{"w":"sad","zh":"伤心的","us":[2],"g":"g5"},{"w":"matter","zh":"事情；要紧","us":[2],"g":"g5"},{"w":"project","zh":"项目；课题","us":[2],"g":"g5"},{"w":"centre","zh":"中心","us":[2],"g":"g5"},{"w":"agree","zh":"同意","us":[2],"g":"g5"},{"w":"finish","zh":"完成","us":[2],"g":"g5"},{"w":"worried","zh":"担心的","us":[2],"g":"g5"},{"w":"both","zh":"两者都","us":[2],"g":"g5"},{"w":"excited","zh":"兴奋的","us":[2],"g":"g5"},{"w":"wrong","zh":"错误的","us":[2],"g":"g5"},{"w":"angry","zh":"生气的","us":[2],"g":"g5"},{"w":"afraid","zh":"害怕的","us":[2],"g":"g5"},{"w":"parent","zh":"父（母）亲","us":[2],"g":"g5"},{"w":"ask","zh":"问；请求","us":[2],"g":"g5"},{"w":"laugh","zh":"笑","us":[2],"g":"g5"},{"w":"move","zh":"移动；搬家","us":[2],"g":"g5"},{"w":"yours","zh":"你的（东西）","us":[2],"g":"g5"},{"w":"Wednesday","zh":"星期三","us":[3],"g":"g5"},{"w":"Thursday","zh":"星期四","us":[3],"g":"g5"},{"w":"subject","zh":"学科；科目","us":[3],"g":"g5"},{"w":"Tuesday","zh":"星期二","us":[3],"g":"g5"},{"w":"Friday","zh":"星期五","us":[3],"g":"g5"},{"w":"because","zh":"因为","us":[3],"g":"g5"},{"w":"Monday","zh":"星期一","us":[3],"g":"g5"},{"w":"usually","zh":"通常","us":[3],"g":"g5"},{"w":"weekend","zh":"周末","us":[3],"g":"g5"},{"w":"sometimes","zh":"有时","us":[3],"g":"g5"},{"w":"Saturday","zh":"星期六","us":[3],"g":"g5"},{"w":"Sunday","zh":"星期日","us":[3],"g":"g5"},{"w":"lesson","zh":"课；功课","us":[3],"g":"g5"},{"w":"evening","zh":"晚上","us":[3],"g":"g5"},{"w":"answer","zh":"回答；答案","us":[3],"g":"g5"},{"w":"ping-pong","zh":"乒乓球","us":[3],"g":"g5"},{"w":"night","zh":"夜晚","us":[3],"g":"g5"},{"w":"visit","zh":"参观；拜访","us":[3],"g":"g5"},{"w":"grandparent","zh":"（外）祖父/母","us":[3],"g":"g5"},{"w":"start","zh":"开始","us":[3],"g":"g5"},{"w":"then","zh":"然后；那时","us":[3],"g":"g5"},{"w":"stay","zh":"停留；保持","us":[4],"g":"g5"},{"w":"should","zh":"应该","us":[4],"g":"g5"},{"w":"flu","zh":"流感","us":[4],"g":"g5"},{"w":"else","zh":"其他的","us":[4],"g":"g5"},{"w":"exercise","zh":"锻炼；练习","us":[4],"g":"g5"},{"w":"enough","zh":"足够的","us":[4],"g":"g5"},{"w":"if","zh":"如果","us":[4],"g":"g5"},{"w":"habit","zh":"习惯","us":[4],"g":"g5"},{"w":"house","zh":"房子；住宅","us":[4],"g":"g5"},{"w":"show","zh":"给…看；演出","us":[4],"g":"g5"},{"w":"phone","zh":"电话；打电话","us":[4],"g":"g5"},{"w":"rest","zh":"休息","us":[4],"g":"g5"},{"w":"check","zh":"检查","us":[4],"g":"g5"},{"w":"less","zh":"更少的","us":[4],"g":"g5"},{"w":"brush","zh":"刷；刷子","us":[4],"g":"g5"},{"w":"tooth","zh":"牙齿","us":[4],"g":"g5"},{"w":"twice","zh":"两次","us":[4],"g":"g5"},{"w":"hour","zh":"小时","us":[4],"g":"g5"},{"w":"free","zh":"自由的；空闲的","us":[4],"g":"g5"},{"w":"hungry","zh":"饥饿的","us":[5],"g":"g5"},{"w":"beef","zh":"牛肉","us":[5],"g":"g5"},{"w":"ice cream","zh":"冰淇淋","us":[5],"g":"g5"},{"w":"Little","zh":"小的（昵称）","us":[5],"g":"g5"},{"w":"dumpling","zh":"饺子","us":[5],"g":"g5"},{"w":"Mrs","zh":"夫人（称呼）","us":[5],"g":"g5"},{"w":"hamburger","zh":"汉堡包","us":[5],"g":"g5"},{"w":"coconut","zh":"椰子","us":[5],"g":"g5"},{"w":"interesting","zh":"有趣的","us":[5],"g":"g5"},{"w":"seed","zh":"种子","us":[5],"g":"g5"},{"w":"pull","zh":"拉；拔","us":[5],"g":"g5"},{"w":"stem","zh":"茎；干","us":[5],"g":"g5"},{"w":"root","zh":"根","us":[5],"g":"g5"},{"w":"lotus","zh":"莲花","us":[5],"g":"g5"},{"w":"lake","zh":"湖","us":[5],"g":"g5"},{"w":"world","zh":"世界","us":[5],"g":"g5"},{"w":"tea","zh":"茶","us":[5],"g":"g5"},{"w":"way","zh":"方式；路","us":[5],"g":"g5"},{"w":"river","zh":"河；江","us":[6],"g":"g5"},{"w":"nature","zh":"自然","us":[6],"g":"g5"},{"w":"waterfall","zh":"瀑布","us":[6],"g":"g5"},{"w":"forest","zh":"森林","us":[6],"g":"g5"},{"w":"famous","zh":"著名的","us":[6],"g":"g5"},{"w":"mountain","zh":"高山","us":[6],"g":"g5"},{"w":"trip","zh":"旅行","us":[6],"g":"g5"},{"w":"dangerous","zh":"危险的","us":[6],"g":"g5"},{"w":"wind","zh":"风","us":[7],"g":"g5"},{"w":"heavy","zh":"重的；猛烈的","us":[7],"g":"g5"},{"w":"hotel","zh":"旅馆","us":[7],"g":"g5"},{"w":"close","zh":"关；合上","us":[7],"g":"g5"},{"w":"umbrella","zh":"雨伞","us":[7],"g":"g5"},{"w":"raincoat","zh":"雨衣","us":[7],"g":"g5"},{"w":"worry","zh":"担心","us":[7],"g":"g5"},{"w":"fine","zh":"晴朗的；好的","us":[7],"g":"g5"},{"w":"fog","zh":"雾","us":[7],"g":"g5"},{"w":"flood","zh":"洪水","us":[7],"g":"g5"},{"w":"fire","zh":"火；火灾","us":[7],"g":"g5"},{"w":"know","zh":"知道","us":[7],"g":"g5"},{"w":"before","zh":"在…以前","us":[7],"g":"g5"},{"w":"bring","zh":"带来","us":[7],"g":"g5"}];
+var WMAP = {};
+WORDS_MIN.forEach(function(x){ WMAP[x.g + '|' + x.w.toLowerCase()] = x; });
+
+/* ============ 本地存档（存在这台设备的浏览器里，不上传） ============ */
+var PW = (function(){
+  var K = 'phonicsWorkshop_v1', d;
+  try{ d = JSON.parse(localStorage.getItem(K)) || {}; }catch(e){ d = {}; }
+  if(!d.data) d.data = {};
+  if(!d.kid) d.kid = '我';
+  function save(){ try{ localStorage.setItem(K, JSON.stringify(d)); }catch(e){} }
+  function prof(){ if(!d.data[d.kid]) d.data[d.kid] = {}; return d.data[d.kid]; }
+  function gr(g){
+    var p = prof(), x = p[g];
+    if(!x || typeof x !== 'object') x = p[g] = {};
+    if(!x.w) x.w = {}; if(!x.r) x.r = {}; if(!x.d) x.d = {};
+    if(typeof x.s !== 'number') x.s = 0;
+    return x;
+  }
+  function today(){ var t = new Date(), p = function(n){ return String(n).padStart(2,'0'); };
+    return t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate()); }
+  function day(g){ var x = gr(g), t = today(); if(!x.d[t]) x.d[t] = {s:0,r:0,w:0}; return x.d[t]; }
+  return {
+    today: today,
+    wrong: function(g,w){ var x=gr(g); x.w[w]=(x.w[w]||0)+1; day(g).w++; save(); },
+    right: function(g,w){ var x=gr(g); x.r[w]=(x.r[w]||0)+1; day(g).r++; save(); },
+    star:  function(g){ var x=gr(g); x.s++; day(g).s++; save(); },
+    grade: function(g){ return gr(g); },
+    all:   function(){ return prof(); },
+    delWrong:  function(g,w){ var x=gr(g); delete x.w[w]; save(); },
+    clearGrade:function(g){ var x=gr(g); x.w={}; save(); },
+    clearAll:  function(){ d.data = {}; save(); }
+  };
+})();
+var GS = [{g:'g3',n:'三年级',f:'grade3.html'},{g:'g4',n:'四年级',f:'grade4.html'},{g:'g5',n:'五年级',f:'grade5.html'}];
+function keepQuery(href){            /* 把 sharecode 等参数带到下一个页面 */
+  var q = location.search || '';
+  if(!q) return href;
+  return href.indexOf('?') === -1 ? (href + q) : (href + '&' + q.slice(1));
+}
+
+var filter = 'all';
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+}
+function collect(){
+  var p = PW.all(), map = {};
+  GS.forEach(function(o){
+    var x = p[o.g]; if(!x || !x.w) return;
+    Object.keys(x.w).forEach(function(w){
+      var n = x.w[w]; if(!n) return;
+      var k = o.g + '|' + w.toLowerCase();
+      var info = WMAP[k];
+      if(!map[k]) map[k] = { w:(info ? info.w : w), n:0, g:o.g, gn:o.n, f:o.f, keys:[],
+                             zh:(info ? info.zh : ''), us:(info ? info.us : []) };
+      map[k].n += n;
+      map[k].keys.push(w);                       /* 同一个词大小写写过两次，删的时候一起删 */
+      if(info) map[k].w = info.w;
+    });
+  });
+  var out = Object.keys(map).map(function(k){ return map[k]; });
+  out.sort(function(a,b){ return a.w.toLowerCase() < b.w.toLowerCase() ? -1 : 1; });   /* 按字母排序 */
+  return out;
+}
+function counts(){
+  var p = PW.all(), c = {all:0, g3:0, g4:0, g5:0}, seen = {};
+  GS.forEach(function(o){
+    var x = p[o.g]; if(!x || !x.w) return;
+    Object.keys(x.w).forEach(function(w){
+      if(!x.w[w]) return;
+      var k = o.g + '|' + w.toLowerCase();
+      if(seen[k]) return; seen[k] = 1;
+      c[o.g]++; c.all++;
+    });
+  });
+  return c;
+}
+function renderChips(){
+  var c = counts(), box = document.getElementById('chips');
+  box.innerHTML = '';
+  var opts = [{k:'all',n:'全部'}].concat(GS.map(function(o){ return {k:o.g,n:o.n}; }));
+  opts.forEach(function(o){
+    var b = document.createElement('button');
+    b.className = 'chip' + (filter === o.k ? ' on' : '');
+    b.innerHTML = o.n + ' <span class="n">' + c[o.k] + '</span>';
+    b.onclick = function(){ filter = o.k; renderChips(); renderList(); };
+    box.appendChild(b);
+  });
+  document.getElementById('clearAll').style.display = c.all ? '' : 'none';   /* 空的时候不用显示清空 */
+}
+function renderList(){
+  var all = collect();
+  var rows = filter === 'all' ? all : all.filter(function(r){ return r.g === filter; });
+  var list = document.getElementById('list'), empty = document.getElementById('empty');
+  list.innerHTML = '';
+  empty.hidden = rows.length > 0;
+  if(!rows.length && filter === 'all') empty.innerHTML = '<span class="big">🌟</span>还没有错词。<br>玩「找一找」或「拼一拼」时拼错的词会自动出现在这里。';
+  else if(!rows.length) empty.innerHTML = '<span class="big">🌟</span>这一年级还没有错词。';
+  rows.forEach(function(r){
+    var row = document.createElement('div');
+    row.className = 'row';
+    var unit = r.us && r.us.length ? ('Unit ' + r.us.join('/')) : '';
+    row.innerHTML = '<span class="wd">' + r.w + '</span>' +
+      (r.zh ? '<span class="zh">' + r.zh + '</span>' : '') +
+      '<span class="meta">' + r.gn + (unit ? ' · ' + unit : '') + '</span>' +
+      '<span class="cnt">错 ' + r.n + ' 次</span>' +
+      '<button class="del" title="删除这个词">✕</button>';
+    row.onclick = function(){ location.href = keepQuery(r.f + '?w=' + encodeURIComponent(r.w)); };
+    row.querySelector('.del').onclick = function(e){
+      e.stopPropagation();
+      r.keys.forEach(function(k){ PW.delWrong(r.g, k); });
+      renderChips(); renderList();
+      toast('已删除：' + r.w);
+    };
+    list.appendChild(row);
+  });
+}
+document.getElementById('clearAll').onclick = function(){
+  if(!confirm('清空全部错词？拼错之后还会重新收集。')) return;
+  GS.forEach(function(o){ PW.clearGrade(o.g); });
+  renderChips(); renderList(); toast('错词本已清空');
+};
+renderChips(); renderList();
+</script>
+</body>
+</html>

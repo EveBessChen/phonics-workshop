@@ -466,6 +466,47 @@ const PH = {}; const WD = {};
 
 const AUTO_READ = {"find":true,"build":true};
 const N_UNITS = 7;
+const GRADE = 'g5';
+
+/* ============ 本地存档（存在这台设备的浏览器里，不上传） ============ */
+var PW = (function(){
+  var K = 'phonicsWorkshop_v1', d;
+  try{ d = JSON.parse(localStorage.getItem(K)) || {}; }catch(e){ d = {}; }
+  if(!d.data) d.data = {};
+  if(!d.kid) d.kid = '我';
+  function save(){ try{ localStorage.setItem(K, JSON.stringify(d)); }catch(e){} }
+  function prof(){ if(!d.data[d.kid]) d.data[d.kid] = {}; return d.data[d.kid]; }
+  function gr(g){
+    var p = prof(), x = p[g];
+    if(!x || typeof x !== 'object') x = p[g] = {};
+    if(!x.w) x.w = {}; if(!x.r) x.r = {}; if(!x.d) x.d = {};
+    if(typeof x.s !== 'number') x.s = 0;
+    return x;
+  }
+  function today(){ var t = new Date(), p = function(n){ return String(n).padStart(2,'0'); };
+    return t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate()); }
+  function day(g){ var x = gr(g), t = today(); if(!x.d[t]) x.d[t] = {s:0,r:0,w:0}; return x.d[t]; }
+  return {
+    today: today,
+    wrong: function(g,w){ var x=gr(g); x.w[w]=(x.w[w]||0)+1; day(g).w++; save(); },
+    right: function(g,w){ var x=gr(g); x.r[w]=(x.r[w]||0)+1; day(g).r++; save(); },
+    star:  function(g){ var x=gr(g); x.s++; day(g).s++; save(); },
+    grade: function(g){ return gr(g); },
+    all:   function(){ return prof(); },
+    delWrong:  function(g,w){ var x=gr(g); delete x.w[w]; save(); },
+    clearGrade:function(g){ var x=gr(g); x.w={}; save(); },
+    clearAll:  function(){ d.data = {}; save(); }
+  };
+})();
+function jumpToWord(word){                    /* 从错词本跳过来：直接定位到这个词 */
+  var w = WORDS.filter(function(x){ return x.w.toLowerCase() === String(word).toLowerCase(); })[0];
+  if(!w) return;
+  filter = 'unit'; key = (w.us && w.us.length) ? w.us[0] : 1;
+  loadSet();
+  var i = deck.findIndex(function(x){ return x.w === w.w; });
+  if(i >= 0){ idx = i; renderWord(); }
+}
+
 let AC = null;
 const cache = new Map();
 let sources = [];
@@ -740,7 +781,7 @@ function pickOption(btn, word, w){
     $('#qWord').textContent = w.w; $('#qIpa').textContent = w.ipa;
     $('#qZh').textContent = w.zh; $('#qZh').className = 'qZh';
     $('#qHint').textContent = '听一听连读，再自己读一遍';
-    if(!done.has(idx)){ done.add(idx); $('#stars').textContent=done.size; renderList(); }
+    if(!done.has(idx)){ done.add(idx); $('#stars').textContent=done.size; PW.star(GRADE); renderList(); } PW.right(GRADE, w.w);
     play(WD[w.w], 0.95);
     $('#barFill').style.width = ((idx+1)/deck.length*100)+'%';
     const g=gen;
@@ -748,7 +789,7 @@ function pickOption(btn, word, w){
     else advanceTimer=setTimeout(()=>{ if(g===gen && !busy) nextWord(); }, 1900);
   } else {
     btn.classList.add('no','wrong'); btn.querySelector('.mk').textContent='✕';
-    btn.disabled = true; wrongCount++;
+    btn.disabled = true; wrongCount++; PW.wrong(GRADE, w.w);
     setTimeout(()=>btn.classList.remove('wrong'), 420);
     play(WD[word], 0.9);
     toast(wrongCount>=2 ? '再听一遍 🔊，注意开头的音' : '不对哦，听一听这个词读什么');
@@ -802,6 +843,7 @@ function fillFixed(w){
 function tapChip(el,i){
   if(busy) return;
   if(i!==placed){
+    if(cur()) PW.wrong(GRADE, cur().w);
     el.classList.add('wrong'); setTimeout(()=>el.classList.remove('wrong'),400);
     toast('先听发音，再按顺序点');
     return;
@@ -817,7 +859,7 @@ function tapChip(el,i){
   while(placed<w.tiles.length && isFixed(w.tiles[placed])) placed++;
   const g=gen;
   if(placed===w.tiles.length){
-    if(!done.has(idx)){ done.add(idx); $('#stars').textContent=done.size; renderList(); }
+    if(!done.has(idx)){ done.add(idx); $('#stars').textContent=done.size; PW.star(GRADE); renderList(); } PW.right(GRADE, w.w);
     setTimeout(()=>{ if(g===gen) onComplete(); }, 460);
   }
 }
@@ -973,6 +1015,8 @@ $('#soundGate').onclick=e=>{ if(e.target.id==='soundGate'){ $('#soundGate').clas
   }catch(e){}
   $('#loading').style.display='none';
   renderRail(); renderAside(); loadSet();
+  var qw = new URLSearchParams(location.search).get('w');
+  if(qw) jumpToWord(qw);
   // 浏览器要求先有一次点击才允许出声：没解锁就提示一下，解锁后自动补读当前单词
   if(!(await ready())) showSoundGate();                             // 浏览器锁着声音：先请孩子点一下
   else if(window.innerWidth>560) setTimeout(()=>toast('每个单词会自动读一遍，没听清再点 🔊'),700);
