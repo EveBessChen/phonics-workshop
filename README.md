@@ -1,4 +1,7 @@
-# 拼读小工坊 · 让你轻松背单词
+# 拼读小工坊 2.0 · 让你轻松背单词
+
+> 版本：**拼读小工坊 2.0**（2026-10-26 保存）
+> 标签：`v2.0`　在线地址：https://phonics-workshop-46727.app.workbuddy.host/index.html?sharecode=XIK4EUOVLQ
 
 面向乡村小学（孙吉元宏博学校）三～五年级的英语词汇闯关网页。
 **单文件、离线可用、零依赖** —— 手机、教室大屏、电脑双击就能玩，不需要联网、不需要安装任何东西。
@@ -87,6 +90,9 @@ https://phonics-workshop-46727.app.workbuddy.host/index.html?sharecode=XIK4EUOVL
 
 ## 更新记录
 
+- **2026-10-26 · v2.0（拼读小工坊 2.0）**：CVC 组彻底返工，只保留三字母真 CVC —— 三年级 11（can/mum/dad/big/dog/pet/cat/sun/red/ten/cut）、四年级 6（job/his/bus/hot/bad/fun）、五年级 3（him/sad/fog）；
+  `fox`、`six` 因是四字母、x 读 /ks/ 两个音，改归「辅音组合」；线上旧版混入的 swim/sock/dress/which 等长词全部清出；
+  已同步上线（链接不变），线上实测 chips 显示 11 / 6 / 3、找一找选项全为三字母
 - 2026-10-26（深夜 2）：① 存储保险升级 v2 —— 浏览器禁存时改用 `window.name`（跨页面不丢），错词本/报告/视频日期都能在本次标签页内正常同步；提示条每个标签页只弹一次、14 秒自动消失，游戏页不弹；
   ② 视频 `preload="none"` + 点开才挂 `src`，首页 0 视频流量；站内返回/后退/刷新/同一天再开一律不自动播；
   ③ 错词只记被考的那个词（干扰项不记），同一个词本轮只记一次；
