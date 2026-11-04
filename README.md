@@ -10,6 +10,12 @@
 
 https://phonics-workshop-46727.app.workbuddy.host/index.html?sharecode=XIK4EUOVLQ
 
+## 代码仓库（公开）
+
+- GitHub（主）：https://github.com/EveBessChen/phonics-workshop
+- Gitee（镜像）：https://gitee.com/EveBessChen/phonics-workshop
+- 版本标签：**`v2.0`**（拼读小工坊 2.0，CVC 组严格三字母）
+
 ## 本地打开
 
 直接双击 `index.html`（或用浏览器打开），选年级就能开始。整词朗读与音块拼读的音频都已内联在网页里，断网也能响。
